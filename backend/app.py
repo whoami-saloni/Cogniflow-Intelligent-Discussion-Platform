@@ -49,6 +49,14 @@ class Vote(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     vote_type = db.Column(db.String(10))  # 'up' or 'down'
 
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user = db.relationship('User', backref=db.backref('notifications', lazy='dynamic'))
+
 # ----------------------------- AUTH ROUTES -----------------------------
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -63,7 +71,7 @@ def login():
             flash('Login successful!')
             return redirect(url_for('index'))
         flash('Invalid credentials')
-    return render_template('login.html')
+    return render_template('login.html', now=datetime.now)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -80,7 +88,7 @@ def register():
         db.session.commit()
         flash('Registration successful! Please log in.')
         return redirect(url_for('login'))
-    return render_template('register.html')
+    return render_template('register.html', now=datetime.now)
 
 @app.route('/logout')
 def logout():
@@ -88,12 +96,23 @@ def logout():
     flash('Logged out successfully.')
     return redirect(url_for('index'))
 
+@app.context_processor
+def inject_notifications():
+    if 'user_id' not in session:
+        return dict(unread_count=0, notifications=[])
+    user_id = session['user_id']
+    unread = Notification.query.filter_by(user_id=user_id, is_read=False).order_by(Notification.created_at.desc()).limit(5).all()
+    return dict(
+        unread_count=len(unread),
+        notifications=[{'message': n.message, 'created_at': n.created_at} for n in unread]
+    )
+
 # ----------------------------- MAIN ROUTES -----------------------------
 
 @app.route('/', methods=['GET'])
 def index():
     questions = Question.query.order_by(Question.created_at.desc()).all()
-    return render_template('index.html', questions=questions, username=session.get('username'))
+    return render_template('index.html', questions=questions, username=session.get('username'), now=datetime.now)
 
 @app.route('/ask', methods=['GET', 'POST'])
 def ask_page():
@@ -113,7 +132,7 @@ def ask_page():
         flash('Question submitted!')
         return redirect(url_for('index'))
 
-    return render_template('ask.html')
+    return render_template('ask.html', now=datetime.now)
 
 @app.route('/questions/<int:qid>', methods=['GET', 'POST'])
 def question_detail(qid):
@@ -126,13 +145,18 @@ def question_detail(qid):
         content = request.form['content']
         answer = Answer(content=content, question_id=qid, user_id=session['user_id'])
         db.session.add(answer)
+
+        # Add notification
+        if question.user_id != session['user_id']:
+            note = Notification(user_id=question.user_id, message=f"{session['username']} answered your question.")
+            db.session.add(note)
+
         db.session.commit()
         flash('Answer added!')
         return redirect(url_for('question_detail', qid=qid))
 
     answers = question.answers
 
-    # ✅ Compute vote counts per answer
     vote_counts = {}
     for ans in answers:
         upvotes = sum(1 for v in ans.votes if v.vote_type == 'up')
@@ -144,10 +168,9 @@ def question_detail(qid):
         question=question,
         answers=answers,
         vote_counts=vote_counts,
-        username=session.get('username')
+        username=session.get('username'),
+        now=datetime.now
     )
-
-
 
 @app.route('/answers/<int:aid>/vote', methods=['POST'])
 def vote(aid):
@@ -168,6 +191,12 @@ def accept_answer(qid, aid):
         return redirect(url_for('login'))
     answer = Answer.query.get_or_404(aid)
     answer.is_accepted = True
+
+    # Add notification to answer owner
+    if answer.user_id != session['user_id']:
+        note = Notification(user_id=answer.user_id, message=f"Your answer was accepted on '{answer.question.title}'")
+        db.session.add(note)
+
     db.session.commit()
     flash('Answer accepted!')
     return redirect(url_for('question_detail', qid=qid))
