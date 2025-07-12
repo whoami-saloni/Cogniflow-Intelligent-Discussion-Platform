@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>StackIt - Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">StackIt - Q&A Forum</h1>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="bg-green-200 text-green-900 p-2 mb-2">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" class="bg-white p-4 rounded shadow mb-6">
+      <input name="title" placeholder="Title" required class="block w-full p-2 mb-2 border">
+      <textarea name="description" placeholder="Description" required class="block w-full p-2 mb-2 border"></textarea>
+      <label>Tags:</label>
+      <div class="mb-2">
+        <label><input type="checkbox" name="tags" value="Python"> Python</label>
+        <label><input type="checkbox" name="tags" value="Flask"> Flask</label>
+        <label><input type="checkbox" name="tags" value="React"> React</label>
+      </div>
+      <button class="bg-blue-500 text-white px-4 py-2 rounded">Submit Question</button>
+    </form>
+
+    {% for q in questions %}
+      <div class="bg-white p-4 rounded shadow mb-4">
+        <h2 class="text-xl font-semibold">
+          <a href="/questions/{{ q.id }}">{{ q.title }}</a>
+        </h2>
+        <p class="text-gray-700">{{ q.description }}</p>
+        <p class="text-sm text-gray-500">Asked by {{ q.user.username }} at {{ q.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
+'''
+
+# question_detail.html
+'''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ question.title }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-2xl font-bold">{{ question.title }}</h1>
+    <p class="mb-4">{{ question.description }}</p>
+
+    <form method="POST" class="mb-6">
+      <textarea name="content" placeholder="Your answer..." required class="block w-full p-2 mb-2 border"></textarea>
+      <button class="bg-green-500 text-white px-4 py-2 rounded">Submit Answer</button>
+    </form>
+
+    <h2 class="text-xl font-semibold mb-2">Answers</h2>
+    {% for a in question.answers %}
+      <div class="bg-white p-4 rounded shadow mb-3">
+        <p>{{ a.content }}</p>
+        <form method="POST" action="/answers/{{ a.id }}/vote" class="inline">
+          <input type="hidden" name="vote" value="up">
+          <button class="text-blue-500">⬆️ Upvote</button>
+        </form>
+        {% if not a.is_accepted %}
+          <form method="POST" action="/questions/{{ question.id }}/accept/{{ a.id }}" class="inline">
+            <button class="text-green-600">✅ Accept</button>
+          </form>
+        {% else %}
+          <span class="text-green-600 font-bold">✔ Accepted</span>
+        {% endif %}
+        <p class="text-sm text-gray-500">By {{ a.user.username }} at {{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
+
