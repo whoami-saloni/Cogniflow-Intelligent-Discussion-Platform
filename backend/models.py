@@ -46,6 +46,8 @@ class Vote(db.Model):
     answer_id = db.Column(db.Integer, db.ForeignKey('answer.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+
+
 # Helper to initialize db
 
 def init_db(app):

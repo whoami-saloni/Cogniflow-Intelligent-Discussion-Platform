@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2 class="text-xl font-bold mb-4">Recent Questions</h2>
+  {% for q in questions %}
+    <div class="bg-white p-4 rounded shadow mb-3">
+      <h3 class="text-lg font-semibold"><a href="/questions/{{ q.id }}">{{ q.title }}</a></h3>
+      <p>{{ q.description[:200] }}...</p>
+      <p class="text-sm text-gray-500">By {{ q.user.username }} at {{ q.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    </div>
+  {% else %}
+    <p>No questions found.</p>
+  {% endfor %}
+{% endblock %}

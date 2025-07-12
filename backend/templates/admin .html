@@ -1,0 +1,26 @@
+# frontend/templates/admin.html
+{% extends "base.html" %}
+{% block content %}
+  <h2 class="text-2xl font-bold mb-4">Admin Dashboard</h2>
+
+  <h3 class="text-xl font-semibold mt-6 mb-2">All Users</h3>
+  <ul class="bg-white shadow rounded p-4 mb-4">
+    {% for user in users %}
+      <li class="border-b py-2">{{ user.username }} ({{ user.email }}) {% if user.is_admin %}- <span class="text-green-600 font-semibold">Admin</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+
+  <h3 class="text-xl font-semibold mt-6 mb-2">All Questions</h3>
+  <ul class="bg-white shadow rounded p-4">
+    {% for q in questions %}
+      <li class="border-b py-2">
+        <strong>{{ q.title }}</strong><br>
+        Asked by: {{ q.user.username }} | {{ q.created_at.strftime('%Y-%m-%d %H:%M') }}<br>
+        <form method="POST" action="/admin/delete-question/{{ q.id }}" class="inline">
+          <button class="text-red-600 text-sm">Delete</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
