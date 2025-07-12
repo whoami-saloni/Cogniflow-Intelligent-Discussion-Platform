@@ -6,6 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from textblob import TextBlob
+import spacy
+nlp = spacy.load("en_core_web_sm")
 
 app = Flask(__name__)
 CORS(app)
@@ -32,6 +35,8 @@ class Question(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('questions', lazy=True))
+    sentiment = db.Column(db.String(20), default="neutral")
+
 
 class Answer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -112,8 +117,18 @@ def inject_notifications():
 
 @app.route('/', methods=['GET'])
 def index():
-    questions = Question.query.order_by(Question.created_at.desc()).all()
-    return render_template('index.html', questions=questions, username=session.get('username'), now=datetime.now)
+    query = request.args.get('q')
+    if query:
+        questions = Question.query.filter(
+            Question.title.ilike(f'%{query}%') |
+            Question.description.ilike(f'%{query}%') |
+            Question.tags.ilike(f'%{query}%')
+        ).order_by(Question.created_at.desc()).all()
+    else:
+        questions = Question.query.order_by(Question.created_at.desc()).all()
+
+    return render_template('index.html', questions=questions, username=session.get('username'), now=datetime.now, search_query=query or '')
+   
 
 @app.route('/ask', methods=['GET', 'POST'])
 def ask_page():
@@ -123,11 +138,16 @@ def ask_page():
 
     if request.method == 'POST':
         data = request.form
+        description = data['description']
+        sentiment = get_sentiment(description)
+        auto_tags = generate_tags_from_description(description)
+
         new_question = Question(
             title=data['title'],
-            description=data['description'],
+            description=description,
             user_id=session['user_id'],
-            tags = request.form['tags'].strip()
+            tags=auto_tags,
+            sentiment=sentiment
         )
         db.session.add(new_question)
         db.session.commit()
@@ -165,13 +185,19 @@ def question_detail(qid):
         downvotes = sum(1 for v in ans.votes if v.vote_type == 'down')
         vote_counts[ans.id] = {'up': upvotes, 'down': downvotes}
 
+    is_admin = False
+    if 'user_id' in session:
+        user = db.session.get(User, session['user_id'])
+        is_admin = user.is_admin if user else False
+
     return render_template(
         'question_detail.html',
         question=question,
         answers=answers,
         vote_counts=vote_counts,
         username=session.get('username'),
-        now=datetime.now
+        now=datetime.now,
+        is_admin=is_admin
     )
 
 @app.route('/answers/<int:aid>/vote', methods=['POST'])
@@ -185,6 +211,16 @@ def vote(aid):
     db.session.commit()
     flash('Vote recorded!')
     return redirect(request.referrer)
+
+def get_sentiment(text):
+    blob = TextBlob(text)
+    polarity = blob.sentiment.polarity  # [-1.0, 1.0]
+    if polarity > 0.1:
+        return 'positive'
+    elif polarity < -0.1:
+        return 'negative'
+    else:
+        return 'neutral'
 
 @app.route('/questions/<int:qid>/accept/<int:aid>', methods=['POST'])
 def accept_answer(qid, aid):
@@ -214,7 +250,8 @@ def admin_dashboard():
         return redirect(url_for('index'))
     users = User.query.all()
     questions = Question.query.order_by(Question.created_at.desc()).all()
-    return render_template('admin.html', users=users, questions=questions, username=session.get('username'))
+    return render_template('admin_dashboard.html', users=users, questions=questions, username=session.get('username'))
+
 
 @app.route('/admin/delete-question/<int:qid>', methods=['POST'])
 def delete_question(qid):
@@ -231,9 +268,38 @@ def delete_question(qid):
     flash("Question deleted successfully")
     return redirect(url_for('admin_dashboard'))
 
+def generate_tags_from_description(description):
+    doc = nlp(description)
+    tags = set()
+
+    for ent in doc.ents:
+        if ent.label_ in ['PERSON', 'ORG', 'GPE', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LANGUAGE']:
+            tags.add(ent.text.lower())
+
+    return ', '.join(tags)
+
+
 # ----------------------------- INIT & RUN -----------------------------
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # safely within app context
+        db.create_all()
+
+        # Create admin only if not exists
+        from werkzeug.security import generate_password_hash
+        if not User.query.filter_by(email='admin@example.com').first():
+            admin_user = User(
+                username='admin',
+                email='admin@example.com',
+                password=generate_password_hash('admin123'),
+                is_admin=True
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+            print("✅ Admin user created: admin@example.com / admin123")
+        else:
+            print("ℹ️ Admin user already exists.")
+
     app.run(debug=True)
+
+

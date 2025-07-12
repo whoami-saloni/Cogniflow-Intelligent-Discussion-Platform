@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StackIt</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1146/1146858.png" />
@@ -13,7 +13,7 @@
   <nav class="bg-white shadow p-4">
     <div class="container mx-auto flex justify-between items-center">
       <a href="/" class="text-xl font-bold text-blue-600">StackIt</a>
-      
+
       <ul class="flex space-x-4 items-center">
         {% if session.get('user_id') %}
           <!-- Notifications -->
@@ -39,12 +39,21 @@
             </div>
           </li>
 
-          <!-- Ask button -->
+          <!-- Ask Question -->
           <li>
-            <a href="/ask" class="bg-blue-500 text-white text-sm px-3 py-1 rounded hover:bg-blue-600">Ask a Question</a>
+            <a href="/ask" class="bg-blue-500 text-white text-sm px-3 py-1 rounded hover:bg-blue-600">
+              Ask a Question
+            </a>
           </li>
 
-          <!-- Username & Logout -->
+          <!-- Admin Dashboard -->
+          {% if session.get('is_admin') %}
+            <li>
+              <a href="/admin" class="text-purple-600 hover:underline text-sm font-medium">Admin Dashboard</a>
+            </li>
+          {% endif %}
+
+          <!-- User Info -->
           <li class="text-sm">👋 {{ session.get('username') }}</li>
           <li>
             <a href="/logout" class="text-red-500 hover:underline text-sm">Logout</a>
@@ -74,7 +83,6 @@
         </div>
       {% endif %}
     {% endwith %}
-
     {% block content %}{% endblock %}
   </main>
 
@@ -83,7 +91,7 @@
     &copy; {{ current_year }} StackIt. All rights reserved.
   </footer>
 
-  <!-- Notification dropdown JS -->
+  <!-- Notification Dropdown Script -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const notifBtn = document.getElementById("notifBtn");
@@ -92,15 +100,14 @@
       if (notifBtn) {
         notifBtn.addEventListener("click", function (e) {
           e.stopPropagation();
-          notifDropdown?.classList.toggle("hidden");
+          notifDropdown.classList.toggle("hidden");
         });
 
         document.addEventListener("click", function () {
-          notifDropdown?.classList.add("hidden");
+          notifDropdown.classList.add("hidden");
         });
       }
     });
   </script>
-
 </body>
 </html>

@@ -26,7 +26,10 @@ class Question(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    answers = db.relationship('Answer', backref='question', lazy=True)
+    question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
+    sentiment = db.Column(db.String(20), default="neutral")
+
+
 
 class Answer(db.Model):
     __tablename__ = 'answer'
