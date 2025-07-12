@@ -25,6 +25,12 @@
             {% endif %}
           </span>
         </p>
+        <p class="text-sm mt-1">
+         <strong>Tags:</strong>
+        {% for tag in question.tags.split(',') %}
+        <span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">{{ tag.strip() }}</span>
+        {% endfor %}
+        </p>
       </div>
 
       {% if is_admin %}
