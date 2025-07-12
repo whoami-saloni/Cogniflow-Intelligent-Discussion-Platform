@@ -3,6 +3,22 @@
 Cogniflow is a smart, AI-enhanced Discussion platform designed for developers, data scientists, and researchers. Inspired by platforms like Stack Overflow, it goes a step further by integrating Natural Language Processing (NLP) features such as **sentiment analysis**, **named entity recognition**, and **auto-tag generation** to enhance the Q&A experience.
 
 ---
+##  Problem Statement
+
+**StackIt – A Minimal Q&A Forum Platform**
+
+Build a user-friendly Q&A platform that allows users to post questions with rich text formatting, answer with voting, tagging, and a real-time notification system for enhanced community learning.
+
+---
+
+## 👩‍💻 Team Member
+
+- **Saloni Sahal**  
+  M.Tech CSE, University of Kalyani  
+  📧 salonisahal15@gmail.com  
+  🔗 [GitHub](https://github.com/whoami-saloni)
+
+---
 
 ## 🚀 Features
 
