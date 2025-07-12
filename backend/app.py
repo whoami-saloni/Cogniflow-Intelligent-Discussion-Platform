@@ -41,6 +41,7 @@ class Answer(db.Model):
     is_accepted = db.Column(db.Boolean, default=False)
     user = db.relationship('User', backref=db.backref('answers', lazy=True))
     question = db.relationship('Question', backref=db.backref('answers', lazy=True))
+    votes = db.relationship('Vote', backref='answer', lazy=True)
 
 class Vote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -117,6 +118,7 @@ def ask_page():
 @app.route('/questions/<int:qid>', methods=['GET', 'POST'])
 def question_detail(qid):
     question = Question.query.get_or_404(qid)
+
     if request.method == 'POST':
         if 'user_id' not in session:
             flash('Please log in to answer questions.')
@@ -127,7 +129,25 @@ def question_detail(qid):
         db.session.commit()
         flash('Answer added!')
         return redirect(url_for('question_detail', qid=qid))
-    return render_template('question_detail.html', question=question, username=session.get('username'))
+
+    answers = question.answers
+
+    # ✅ Compute vote counts per answer
+    vote_counts = {}
+    for ans in answers:
+        upvotes = sum(1 for v in ans.votes if v.vote_type == 'up')
+        downvotes = sum(1 for v in ans.votes if v.vote_type == 'down')
+        vote_counts[ans.id] = {'up': upvotes, 'down': downvotes}
+
+    return render_template(
+        'question_detail.html',
+        question=question,
+        answers=answers,
+        vote_counts=vote_counts,
+        username=session.get('username')
+    )
+
+
 
 @app.route('/answers/<int:aid>/vote', methods=['POST'])
 def vote(aid):
