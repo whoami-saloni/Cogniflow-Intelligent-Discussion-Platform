@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+  <!-- Question Section -->
   <section class="bg-white p-4 rounded shadow mb-6">
     <h2 class="text-2xl font-bold text-gray-800">{{ question.title }}</h2>
     <div class="prose max-w-none text-gray-700 mt-2">{{ question.description | safe }}</div>
@@ -10,6 +11,7 @@
     </p>
   </section>
 
+  <!-- Answers Section -->
   <section>
     <h3 class="text-xl font-semibold mb-3">Answers</h3>
     {% for a in question.answers %}
@@ -21,27 +23,27 @@
 
         <div class="flex items-center space-x-4 mt-2">
           <!-- Upvote -->
-          <form method="POST" action="/answers/{{ a.id }}/vote">
+          <form method="POST" action="/answers/{{ a.id }}/vote" class="inline">
             <input type="hidden" name="type" value="up">
-            <button class="text-green-600 hover:underline">⬆ Upvote</button>
+            <button type="submit" class="text-green-600 hover:underline">⬆ Upvote</button>
           </form>
           <span class="text-sm font-medium text-green-700">
             {{ vote_counts.get(a.id, {}).get('up', 0) }}
           </span>
 
           <!-- Downvote -->
-          <form method="POST" action="/answers/{{ a.id }}/vote">
+          <form method="POST" action="/answers/{{ a.id }}/vote" class="inline">
             <input type="hidden" name="type" value="down">
-            <button class="text-red-600 hover:underline">⬇ Downvote</button>
+            <button type="submit" class="text-red-600 hover:underline">⬇ Downvote</button>
           </form>
           <span class="text-sm font-medium text-red-700">
             {{ vote_counts.get(a.id, {}).get('down', 0) }}
           </span>
 
           <!-- Accept Answer -->
-          {% if question.user.id == session['user_id'] and not a.is_accepted %}
-            <form method="POST" action="/questions/{{ question.id }}/accept/{{ a.id }}">
-              <button class="text-blue-600 hover:underline">✔ Accept Answer</button>
+          {% if question.user.id == session.get('user_id') and not a.is_accepted %}
+            <form method="POST" action="/questions/{{ question.id }}/accept/{{ a.id }}" class="inline">
+              <button type="submit" class="text-blue-600 hover:underline">✔ Accept Answer</button>
             </form>
           {% elif a.is_accepted %}
             <span class="text-green-600 font-bold">✔ Accepted</span>
@@ -53,26 +55,27 @@
     {% endfor %}
   </section>
 
+  <!-- Answer Form -->
   {% if username %}
     <section class="mt-8">
       <h4 class="text-lg font-bold mb-2">Your Answer</h4>
       <form method="POST" id="answer-form">
         <div id="answer-editor" class="bg-white border border-gray-300 rounded p-2 h-40 mb-2"></div>
         <input type="hidden" name="content" id="answer-content">
-        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
           Submit Answer
         </button>
       </form>
     </section>
 
-    <!-- Quill & Emoji Editor -->
+    <!-- Quill + Emoji scripts -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/quill-emoji@0.1.7/dist/quill-emoji.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quill-emoji@0.1.7/dist/quill-emoji.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const quill = new Quill('#answer-editor', {
+        var quill = new Quill('#answer-editor', {
           theme: 'snow',
           modules: {
             toolbar: [
@@ -85,13 +88,13 @@
               ['clean']
             ],
             'emoji-toolbar': true,
-            'emoji-textarea': false,
-            'emoji-shortname': true
+            'emoji-shortname': true,
+            'emoji-textarea': false
           }
         });
 
-        document.querySelector('#answer-form').addEventListener('submit', function () {
-          document.querySelector('#answer-content').value = quill.root.innerHTML;
+        document.getElementById('answer-form').addEventListener('submit', function () {
+          document.getElementById('answer-content').value = quill.root.innerHTML;
         });
       });
     </script>

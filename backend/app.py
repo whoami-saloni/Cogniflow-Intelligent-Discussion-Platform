@@ -28,6 +28,7 @@ class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
+    tags = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('questions', lazy=True))
@@ -125,7 +126,8 @@ def ask_page():
         new_question = Question(
             title=data['title'],
             description=data['description'],
-            user_id=session['user_id']
+            user_id=session['user_id'],
+            tags = request.form['tags'].strip()
         )
         db.session.add(new_question)
         db.session.commit()
