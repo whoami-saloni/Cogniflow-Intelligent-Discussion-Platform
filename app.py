@@ -11,7 +11,7 @@ from backend.NER_tags import generate_tags_from_description
 from backend.Sentiment import get_sentiment 
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='frontend')
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///stackit.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -222,7 +222,6 @@ def delete_question(qid):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.drop_all()
         db.create_all()
 
         # Create admin only if not exists
