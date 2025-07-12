@@ -1,6 +1,6 @@
-# 🧠 Cogniflow - Intelligent Q&A Platform for Developers and Researchers
+# 🧠 Cogniflow - Intelligent Discussion Platform for Developers and Researchers
 
-Cogniflow is a smart, AI-enhanced Question & Answer platform designed for developers, data scientists, and researchers. Inspired by platforms like Stack Overflow, it goes a step further by integrating Natural Language Processing (NLP) features such as **sentiment analysis**, **named entity recognition**, and **auto-tag generation** to enhance the Q&A experience.
+Cogniflow is a smart, AI-enhanced Discussion platform designed for developers, data scientists, and researchers. Inspired by platforms like Stack Overflow, it goes a step further by integrating Natural Language Processing (NLP) features such as **sentiment analysis**, **named entity recognition**, and **auto-tag generation** to enhance the Q&A experience.
 
 ---
 
