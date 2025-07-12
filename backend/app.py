@@ -82,7 +82,7 @@ def questions():
 
 @app.route('/questions/<int:qid>/answers', methods=['POST'])
 def add_answer(qid):
-    data = request.get_json()
+    data = request.form
     new_answer = Answer(
         content=data['content'],
         question_id=qid,
@@ -94,7 +94,7 @@ def add_answer(qid):
 
 @app.route('/answers/<int:aid>/vote', methods=['POST'])
 def vote(aid):
-    data = request.get_json()
+    data = request.form
     vote = Vote(answer_id=aid, user_id=data['user_id'], vote_type=data['type'])
     db.session.add(vote)
     db.session.commit()

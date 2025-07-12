@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>StackIt</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+  <header class="bg-white shadow p-4 mb-4">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold"><a href="/">StackIt</a></h1>
+      <a href="/ask" class="text-blue-600 font-semibold">Ask a Question</a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto p-4">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

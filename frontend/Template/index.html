@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form method="GET" action="/" class="flex items-center gap-2 mb-4">
+  <select name="tag" class="border p-2 rounded">
+    <option value="">All</option>
+    <option value="React">React</option>
+    <option value="JWT">JWT</option>
+    <option value="Flask">Flask</option>
+  </select>
+  <input type="text" name="search" placeholder="Search..." class="border p-2 rounded w-full">
+  <button class="bg-blue-500 text-white px-4 py-2 rounded">Search</button>
+</form>
+
+{% for q in questions %}
+<div class="bg-white p-4 rounded shadow mb-3">
+  <h2 class="text-xl font-semibold"><a href="/questions/{{ q.id }}">{{ q.title }}</a></h2>
+  <p>{{ q.description[:200] }}...</p>
+  <div class="text-sm text-gray-500">Tags: {{ q.tags or 'None' }} | Asked by {{ q.user.username }}</div>
+</div>
+{% endfor %}
+
+<div class="flex justify-center mt-4">
+  <!-- Placeholder pagination -->
+  <a href="#" class="px-3">1</a>
+  <a href="#" class="px-3">2</a>
+  <a href="#" class="px-3">3</a>
+</div>
+{% endblock %}

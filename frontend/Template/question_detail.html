@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white p-4 rounded shadow mb-6">
+  <h2 class="text-xl font-bold">{{ question.title }}</h2>
+  <p>{{ question.description }}</p>
+  <div class="text-sm text-gray-500">Tags: {{ question.tags }} | By {{ question.user.username }}</div>
+</div>
+
+<h3 class="text-lg font-semibold mb-2">Answers</h3>
+{% for a in question.answers %}
+<div class="bg-gray-100 p-3 rounded mb-2">
+  <p>{{ a.content }}</p>
+  <div class="text-sm text-gray-500">Answered by {{ a.user.username }} at {{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+</div>
+{% endfor %}
+
+<form method="POST" class="bg-white p-4 rounded shadow mt-6">
+  <label class="block font-semibold mb-1">Your Answer</label>
+  <textarea name="content" class="w-full p-2 border mb-3" rows="5" required></textarea>
+  <button class="bg-green-500 text-white px-4 py-2 rounded">Submit Answer</button>
+</form>
+{% endblock %}
